@@ -2,15 +2,30 @@ import os
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
+import mysql.connector
 
 app = FastAPI()
 
+def get_db_conn():
+
+    data = {
+        "host": "localhost",
+        "port": "6033",
+        "user": "root",
+        "password": "1234",
+        "database": "fastdb"
+    }
+    try:
+        db_conn = mysql.connector.connect(**data)
+        return db_conn
+    except:
+        print("Error")
 
 class Post(BaseModel):
     title: str  # we can use this instead of key value dictionaries
     content: str
-    published: bool = True
-    rating: Optional[int] = 0
+    published: bool = True # set a default value
+    rating: Optional[int] = 0 # make it optional
 
 
 @app.get('/')
@@ -20,12 +35,11 @@ async def root():
 
 @app.get('/posts')
 async def all_posts():
-    return {"posts": "this is all the posts"}
-
-
-@app.post('/')
-async def root_post():
-    return "this is also home, but with post method"
+    conn = get_db_conn()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("select * from posts")
+    result = cursor.fetchall()
+    return {"Posts": result}
 
 
 @app.get('/posts/{search_id}')
@@ -43,6 +57,16 @@ async def post(post: Post):
         "published": post.published,
         "rating": post.rating
     }}
+
+
+@app.delete('/posts/{search_id}')
+async def del_post(search_id: int):
+    conn = get_db_conn()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(f"delete from posts where id={search_id}")
+    conn.commit()
+    return {f"product with id: {search_id} has been deleted": "Ok"}
+
 
 
 if __name__ == "__main__":

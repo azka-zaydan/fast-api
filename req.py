@@ -1,23 +1,15 @@
-import requests
-import threading
+import mysql.connector
 
+data = {
+    "host": "localhost",
+    "port": "6033",
+    "user": "root",
+    "password": "1234"
 
-def do_req():
-    x = "done"
-    while True:
-        req = requests.get('http://www.istanadivan.com/index.php')
-        text = req.text
-        print(x)
+}
 
-
-threads = []
-for i in range(50):
-    t = threading.Thread(target=do_req)
-    t.daemon = True
-    threads.append(t)
-
-for i in range(50):
-    threads[i].start()
-
-for i in range(50):
-    threads[i].join()
+try:
+    db_conn = mysql.connector.connect(**data)
+    print("OK")
+except:
+    print("Error")
