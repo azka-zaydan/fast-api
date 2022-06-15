@@ -1,11 +1,12 @@
 import os
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, Response, status, HTTPException,Depends
+from fastapi import FastAPI, Response, status, HTTPException, Depends
 from pydantic import BaseModel
-import models
-from database import engine,get_db_conn
+from app import apimodels
+from app.apimodels import Base
+from app.apidatabase import engine, get_db_conn
 
-models.Base.metadata.create_all(bind = engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -23,17 +24,14 @@ async def root():
 
 @app.get('/posts')
 async def all_posts(db: Session = Depends(get_db_conn)):
-    dbq = db.query(models.Post)
+    dbq = db.query(apimodels.Post)
     posts = dbq.all()
     return {"Posts": posts}
 
 
 @app.get('/posts/{search_id}')
-async def get_post_with_id(search_id: int):
-    conn = get_db_conn()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(f"select * from posts where id={search_id}")
-    result = cursor.fetchone()
+async def get_post_with_id(search_id: int, db: Session = Depends(get_db_conn)):
+    result = db.query(apimodels.Post).filter(apimodels.Post.id == search_id).first()
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {search_id}, does not exist")
     else:
@@ -44,57 +42,39 @@ async def get_post_with_id(search_id: int):
 
 # want title, and content both string
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def post(post: Post,db: Session= Depends(get_db_conn)):
-    # conn = get_db_conn()
-    # cursor = conn.cursor(dictionary=True)
-    # # to_dict = post.dict() # turn into a dict
-    # title = post.title
-    # content = post.content
-    # published = post.published
-    # cursor.execute(f"INSERT INTO posts (title,content,published) values ('{title}','{content}',{published})")
-    # conn.commit()
-    # cursor.execute("SELECT * FROM posts ORDER BY id DESC LIMIT 1;")
-    # result = cursor.fetchone()
-    # conn.commit()
-    result =models.Post(title=post.title,content=post.content,published=post.published)
+async def post(post: Post, db: Session = Depends(get_db_conn)):
+    result = apimodels.Post(**post.dict())
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+
     return {
         "post": result
     }
 
 
 @app.delete('/posts/{search_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def del_post(search_id: int):
-    conn = get_db_conn()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(f'select * from posts where id={search_id}')
-    result = cursor.fetchone()
-    if result is None:
+async def del_post(search_id: int, db: Session = Depends(get_db_conn)):
+    result = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
+    if result.first() is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {search_id}, does not exist")
     else:
-        cursor.execute(f"delete from posts where id={search_id}")
-        conn.commit()
+        result.delete(synchronize_session=False)
+        db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.put('/posts/{search_id}')
-def update_post(search_id: int, post: Post):
-    conn = get_db_conn()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute(f'select * from posts where id={search_id}')
-    result1 = cursor.fetchone()
-    if result1 is None:
+def update_post(search_id: int, post: Post, db: Session = Depends(get_db_conn)):
+    query = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
+    result = query.first()
+    if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {search_id}, does not exist")
     else:
-        title = post.title
-        content = post.content
-        published = post.published
-        cursor.execute(
-            f"update posts set title='{title}', content='{content}',published={published} where id={search_id};")
-        conn.commit()
-        cursor.execute(f'select * from posts where id={search_id}')
-        result = cursor.fetchone()
+        query.update(post.dict(), synchronize_session=False)
+        db.commit()
         return {
-            "Updated Post": result
+            "Updated Post": query.first()
         }
 
 
