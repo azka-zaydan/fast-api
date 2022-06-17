@@ -1,11 +1,12 @@
 from sqlalchemy import create_engine
+import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import pymysql
 
 pymysql.install_as_MySQLdb()
 
-sqlalchemy_database_url = 'mysql://root:1234@localhost:6033/fastdb'
+sqlalchemy_database_url = 'mysql+pymysql://root:rootpw@localhost:3306/fastdbnew'
 
 engine = create_engine(sqlalchemy_database_url)
 

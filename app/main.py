@@ -2,6 +2,7 @@ import os
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 from pydantic import BaseModel
+import uvicorn
 from app import apimodels
 from app.apimodels import Base
 from app.apidatabase import engine, get_db_conn
@@ -26,7 +27,7 @@ async def root():
 async def all_posts(db: Session = Depends(get_db_conn)):
     dbq = db.query(apimodels.Post)
     posts = dbq.all()
-    return {"Posts": posts}
+    return posts
 
 
 @app.get('/posts/{search_id}')
@@ -35,9 +36,7 @@ async def get_post_with_id(search_id: int, db: Session = Depends(get_db_conn)):
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {search_id}, does not exist")
     else:
-        return {
-            "Post": result
-        }
+        return result
 
 
 # want title, and content both string
@@ -48,9 +47,7 @@ async def post(post: Post, db: Session = Depends(get_db_conn)):
     db.commit()
     db.refresh(result)
 
-    return {
-        "post": result
-    }
+    return result
 
 
 @app.delete('/posts/{search_id}', status_code=status.HTTP_204_NO_CONTENT)
@@ -73,10 +70,8 @@ def update_post(search_id: int, post: Post, db: Session = Depends(get_db_conn)):
     else:
         query.update(post.dict(), synchronize_session=False)
         db.commit()
-        return {
-            "Updated Post": query.first()
-        }
+        return query.first()
 
 
 if __name__ == "__main__":
-    os.system("uvicorn app.main:app --reload")
+   uvicorn.run(app, host="localhost", port=8000)
