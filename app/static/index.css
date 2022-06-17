@@ -1,0 +1,14 @@
+/* make h1 a gradient from blue to black */
+
+h1 {
+  color: #0390fc;
+  font-family: "Poppins";
+  font-weight: bold;
+  font-size: 2.5rem;
+}
+
+p {
+    font-family: "Poppins";
+    font-weight: bold;
+    font-size: large;
+}

@@ -1,15 +1,19 @@
-import os
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 from pydantic import BaseModel
-import uvicorn
 from app import apimodels
 from app.apimodels import Base
 from app.apidatabase import engine, get_db_conn
-
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles as sf
+from fastapi.requests import Request
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.mount("/static", sf(directory="app/static"), name="static")
+app.mount('/scripts', sf(directory='app/scripts'),name='scripts')
+templates = Jinja2Templates(directory='app/templates')
+
 
 
 class Post(BaseModel):
@@ -19,8 +23,8 @@ class Post(BaseModel):
 
 
 @app.get('/')
-async def root():
-    return "this is the home"
+async def root(request: Request):
+    return templates.TemplateResponse('index.html', {'request':request,'title': 'Home'})
 
 
 @app.get('/posts')
@@ -73,5 +77,4 @@ def update_post(search_id: int, post: Post, db: Session = Depends(get_db_conn)):
         return query.first()
 
 
-if __name__ == "__main__":
-   uvicorn.run(app, host="localhost", port=8000)
+
