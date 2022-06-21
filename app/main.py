@@ -7,6 +7,7 @@ from app.apidatabase import engine, get_db_conn
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles as sf
 from fastapi.requests import Request
+from app.schemas import CreatePost, UpdatePost
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -16,10 +17,7 @@ templates = Jinja2Templates(directory='app/templates')
 
 
 
-class Post(BaseModel):
-    title: str  # we can use this instead of key value dictionaries
-    content: str
-    published: bool = True  # set a default value
+
 
 
 @app.get('/')
@@ -45,7 +43,7 @@ async def get_post_with_id(search_id: int, db: Session = Depends(get_db_conn)):
 
 # want title, and content both string
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-async def post(post: Post, db: Session = Depends(get_db_conn)):
+async def post(post: CreatePost, db: Session = Depends(get_db_conn)):
     result = apimodels.Post(**post.dict())
     db.add(result)
     db.commit()
@@ -66,7 +64,7 @@ async def del_post(search_id: int, db: Session = Depends(get_db_conn)):
 
 
 @app.put('/posts/{search_id}')
-def update_post(search_id: int, post: Post, db: Session = Depends(get_db_conn)):
+def update_post(search_id: int, post: UpdatePost, db: Session = Depends(get_db_conn)):
     query = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
     result = query.first()
     if result is None:
