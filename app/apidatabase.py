@@ -6,7 +6,7 @@ import pymysql
 
 pymysql.install_as_MySQLdb()
 
-sqlalchemy_database_url = 'mysql+pymysql://root:rootpw@localhost:3306/fastdbnew'
+sqlalchemy_database_url = 'mysql+pymysql://root:1234@localhost:3306/fastdbnew'
 
 engine = create_engine(sqlalchemy_database_url)
 
