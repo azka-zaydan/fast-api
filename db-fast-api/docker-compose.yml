@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  fast-api-db:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    volumes:
+      - ~/apps/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_PASSWORD=azka
+      - MYSQL_USER=azka

@@ -6,18 +6,21 @@ from app.schemas import CreatePost, Post, UpdatePost
 from typing import List
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/posts",
+    tags=['Posts']
+)
 #  API starts here
 
 
-@router.get('/posts',response_model=List[Post])
+@router.get('/',response_model=List[Post])
 async def all_posts(db: Session = Depends(get_db_conn)):
     dbq = db.query(apimodels.Post)
     posts = dbq.all()
     return posts
 
 
-@router.get('/posts/{search_id}',response_model=Post)
+@router.get('/{search_id}',response_model=Post)
 async def get_post_with_id(search_id: int, db: Session = Depends(get_db_conn)):
     result = db.query(apimodels.Post).filter(apimodels.Post.id == search_id).first()
     if result is None:
@@ -27,7 +30,7 @@ async def get_post_with_id(search_id: int, db: Session = Depends(get_db_conn)):
 
 
 # want title, and content both string
-@router.post('/posts', status_code=status.HTTP_201_CREATED,response_model=Post)
+@router.post('/', status_code=status.HTTP_201_CREATED,response_model=Post)
 async def post(post: CreatePost, db: Session = Depends(get_db_conn)):
     result = apimodels.Post(**post.dict())
     db.add(result)
@@ -37,7 +40,7 @@ async def post(post: CreatePost, db: Session = Depends(get_db_conn)):
     return result
 
 
-@router.delete('/posts/{search_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{search_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def del_post(search_id: int, db: Session = Depends(get_db_conn)):
     result = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
     if result.first() is None:
@@ -48,7 +51,7 @@ async def del_post(search_id: int, db: Session = Depends(get_db_conn)):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.put('/posts/{search_id}',response_model=Post)
+@router.put('/{search_id}',response_model=Post)
 def update_post(search_id: int, post: UpdatePost, db: Session = Depends(get_db_conn)):
     query = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
     result = query.first()

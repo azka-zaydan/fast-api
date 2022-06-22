@@ -5,9 +5,12 @@ from app.apidatabase import get_db_conn
 from app.schemas import UserCreate, UserOut
 from app.utils import hashpass
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/users",
+    tags=['Users']
+)
 
-@router.post('/users',status_code=status.HTTP_201_CREATED,response_model=UserOut)
+@router.post('/',status_code=status.HTTP_201_CREATED,response_model=UserOut)
 def create_user(user:UserCreate,db: Session = Depends(get_db_conn)):
     hash_password = hashpass(user.password)
     user.password = hash_password
@@ -18,7 +21,7 @@ def create_user(user:UserCreate,db: Session = Depends(get_db_conn)):
     
     return result
 
-@router.get('/users/{search_id}',response_model=UserOut)
+@router.get('/{search_id}',response_model=UserOut)
 def get_user(search_id: int, db: Session = Depends(get_db_conn)):
     user = db.query(apimodels.User).filter(apimodels.User.id == search_id).first()
     if not user:
