@@ -1,5 +1,5 @@
 # Default ignored files
 /shelf/
 /workspace.xml
-venv-fast-api
-db-fast-api
+venv-fast-api/
+db-fast-api/
