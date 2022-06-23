@@ -11,7 +11,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.mount("/static", sf(directory="app/static"), name="static")
 app.mount('/scripts', sf(directory='app/scripts'),name='scripts')
-templates = Jinja2Templates(directory='app/templates')
+templates = Jinja2Templates(directory='appdb-fast-api/templates')
 
 #  API starts here
 
