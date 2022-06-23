@@ -22,4 +22,4 @@ app.include_router(user.router)
 async def root(request: Request):
     return templates.TemplateResponse('index.html', {'request':request,'title': 'Home'})
 
-
+# sneaky update
