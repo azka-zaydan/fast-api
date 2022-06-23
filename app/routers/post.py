@@ -52,7 +52,7 @@ async def del_post(search_id: int, db: Session = Depends(get_db_conn)):
 
 
 @router.put('/{search_id}',response_model=Post)
-def update_post(search_id: int, post: UpdatePost, db: Session = Depends(get_db_conn)):
+async def update_post(search_id: int, post: UpdatePost, db: Session = Depends(get_db_conn)):
     query = db.query(apimodels.Post).filter(apimodels.Post.id == search_id)
     result = query.first()
     if result is None:
