@@ -1,5 +1,4 @@
-import os
-from app.main import app
-
+import uvicorn
 if __name__ == "__main__":
-    os.system("uvicorn app.main:app --reload")
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000,
+                log_level="info", reload=True)
