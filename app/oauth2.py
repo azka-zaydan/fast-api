@@ -6,15 +6,17 @@ from jose import JWTError, jwt
 from app.database import get_db_conn
 from app.models import User
 from app.schemas import TokenData
+from app.config import settings
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 # secret key
 # algo
 # expiration time
 
-SECRET_KEY = "I LIKE DUDES 69420"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 def create_access_token(data: dict):
